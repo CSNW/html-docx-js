@@ -27,7 +27,7 @@
   "license": "MIT",
   "devDependencies": {
     "brfs": "^1.1.2",
-    "browserify": "^4.2.0",
+    "browserify": "^16.5.0",
     "chai": "^1.9.1",
     "coffeeify": "^0.6.0",
     "coffeescript": "^2.4.1",
