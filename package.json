@@ -45,7 +45,7 @@
     "sinon": "^1.10.2",
     "sinon-chai": "^2.5.0",
     "vinyl-source-stream": "^0.1.1",
-    "watchify": "^0.10.2"
+    "watchify": "^3.11.1"
   },
   "dependencies": {
     "jszip": "^2.3.0",
