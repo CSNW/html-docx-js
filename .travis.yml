@@ -3,6 +3,7 @@ node_js:
   - 10
 install:
   - npm install
-  - npm run prepublish
+  - npm run clean
+  - npm run prepare
 script:
   - npm test
