@@ -9,7 +9,8 @@
   },
   "scripts": {
     "test": "gulp test-node",
-    "prepublish": "gulp clean; gulp build-node"
+    "clean": "gulp clean",
+    "prepare": "gulp build-node"
   },
   "browserify": {
     "transform": [
