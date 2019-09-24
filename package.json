@@ -22,6 +22,10 @@
     {
       "name": "Ievgen Martynov",
       "email": "ievgen.martynov@gmail.com"
+    },
+    {
+      "name": "Stephen Schutt",
+      "email": "stephen.schutt@gmail.com"
     }
   ],
   "license": "MIT",
@@ -50,6 +54,6 @@
   "dependencies": {
     "jszip": "^2.3.0",
     "lodash.escape": "^3.0.0",
-    "lodash.merge": "^3.2.0"
+    "lodash.merge": "^4.6.2"
   }
 }
