@@ -7,10 +7,10 @@
     "type": "git",
     "url": "git://github.com/evidenceprime/html-docx-js.git"
   },
-  "scripts": {
-    "test": "./node_modules/.bin/gulp test-node",
-    "clean": "./node_modules/.bin/gulp clean",
-    "prepare": "./node_modules/.bin/gulp build-node"
+  "scripts"
+    "test": "gulp test-node",
+    "clean": "gulp clean",
+    "prepare": "gulp build-node"
   },
   "browserify": {
     "transform": [
