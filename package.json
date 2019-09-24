@@ -44,7 +44,7 @@
     "gulp-notify": "^3.2.0",
     "gulp-util": "^2.2.19",
     "jstify": "^0.14.0",
-    "mocha": "^1.20.1",
+    "mocha": "^6.2.0",
     "pretty-hrtime": "^0.2.1",
     "sinon": "^1.10.2",
     "sinon-chai": "^2.5.0",
