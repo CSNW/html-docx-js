@@ -2,7 +2,7 @@ language: node_js
 node_js:
   - 10
 install:
-  - npm ci
+  - npm install
   - npm run prepublish
 script:
   - npm test
