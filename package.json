@@ -8,8 +8,8 @@
     "url": "git://github.com/evidenceprime/html-docx-js.git"
   },
   "scripts": {
-    "test": "gulp test-node",
-    "prepublish": "gulp clean; gulp build-node"
+    "test": "node_modules/.bin/gulp test-node",
+    "prepublish": "node_modules/.bin/gulp clean; node_modules/.bin/gulp build-node"
   },
   "browserify": {
     "transform": [
