@@ -7,7 +7,7 @@
     "type": "git",
     "url": "git://github.com/evidenceprime/html-docx-js.git"
   },
-  "scripts"
+  "scripts": {
     "test": "gulp test-node",
     "clean": "gulp clean",
     "prepare": "gulp build-node"
