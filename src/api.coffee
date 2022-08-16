@@ -1,9 +1,16 @@
-JSZip = require 'jszip'
-internal = require './internal'
-fs = require 'fs'
+var JSZip, fs, internal;
 
-module.exports =
-  asBlob: (html, options) ->
-    zip = new JSZip()
-    internal.addFiles(zip, html, options)
-    internal.generateDocument(zip)
+JSZip = require('jszip');
+
+internal = require('./internal');
+
+fs = require('fs');
+
+module.exports = {
+  asBlob: function(html, options) {
+    var zip;
+    zip = new JSZip();
+    internal.addFiles(zip, html, options);
+    return internal.generateDocument(zip);
+  }
+};
