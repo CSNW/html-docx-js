@@ -28,7 +28,7 @@
     "sinon": "^1.10.2"
   },
   "dependencies": {
-    "jszip": "^2.3.0",
+    "jszip": "^3.10.1",
     "underscore": "^1.13.4"
   }
 }

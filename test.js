@@ -127,26 +127,30 @@ describe('Rendering the Word document', () => {
   })
 
   describe('Generating the document', () => {
-    var zip
+    var zip, called_with;
     beforeEach(() => {
-      zip = {generate: sinon.stub().returns('DEADBEEF')}
+      zip = {generateAsync: async function(arg) {
+        called_with = arg;
+        return 'DEADBEEF';
+      }}
     })
 
-    it('should retrieve ZIP file as arraybuffer', () => {
-      html_docx.generateDocument(zip)
-      assert(zip.generate.calledWith({type: 'arraybuffer'}))
-    })
+    it('should retrieve ZIP file as arraybuffer', async () => {
+      await html_docx.generateDocument(zip)
+      expect(called_with).to.deep.equal({type: 'arraybuffer'});
+    });
 
-    it('should return Blob with correct content type if it is available', () => {
+    it('should return Blob with correct content type if it is available', async () => {
       if (!global.Blob) return 
-      document = html_docx.generateDocument(zip)
+      document = await html_docx.generateDocument(zip)
       expect(document.type).to.be
         .equal('application/vnd.openxmlformats-officedocument.wordprocessingml.document')
     })
 
-    it('should return Buffer in Node.js environment', () => {
-      if (global.Buffer) return
-      expect(html_docx.generateDocumentzip).to.be.an.instanceOf(Buffer)
+    it('should return Buffer in Node.js environment', async () => {
+      if (global.Buffer) return;
+      document = await html_docx.generateDocument(zip);
+      expect(document.to.be.an.instanceOf(Buffer))
     })
   })
 })

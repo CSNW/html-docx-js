@@ -4,10 +4,10 @@ var _ = require('underscore');
 
 let html_docx = {asBlob, getMHTdocument, _prepareImageParts, generateDocument, addFiles, renderDocumentFile};
 
-function asBlob(html, options) {
+async function asBlob(html, options) {
   let zip = new JSZip();
   addFiles(zip, html, options);
-  return generateDocument(zip);
+  return await generateDocument(zip);
 }
 
 function addFiles(zip, html, documentOptions) {
@@ -33,8 +33,8 @@ function addFiles(zip, html, documentOptions) {
       </Relationships>`);
   }
 
-function generateDocument(zip) {
-  var buffer = zip.generate({
+async function generateDocument(zip) {
+  var buffer = await zip.generateAsync({
     type: 'arraybuffer'
   });
   
