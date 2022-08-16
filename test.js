@@ -2,8 +2,8 @@ chai = require('chai')
 expect = chai.expect
 sinon = require('sinon')
 chai.use(require('sinon-chai'))
-internal = require('../src/internal.js')
-utils = require('../src/utils.js')
+internal = require('./src/internal.js')
+utils = require('./src/utils.js')
 
 describe('Adding files', () => {
   var data

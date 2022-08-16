@@ -8,7 +8,7 @@
     "url": "git://github.com/evidenceprime/html-docx-js.git"
   },
   "scripts": {
-    "test": "mocha test/index.js"
+    "test": "npx mocha test.js"
   },
   "author": "Artur Nowak <artur.nowak@evidenceprime.com>",
   "contributors": [
