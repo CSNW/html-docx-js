@@ -140,17 +140,9 @@ describe('Rendering the Word document', () => {
       expect(called_with).to.deep.equal({type: 'arraybuffer'});
     });
 
-    it('should return Blob with correct content type if it is available', async () => {
-      if (!global.Blob) return 
-      document = await html_docx.generateDocument(zip)
-      expect(document.type).to.be
-        .equal('application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-    })
-
     it('should return Buffer in Node.js environment', async () => {
-      if (global.Buffer) return;
-      document = await html_docx.generateDocument(zip);
-      expect(document.to.be.an.instanceOf(Buffer))
+      let document = await html_docx.generateDocument(zip);
+      expect(document).to.be.an.instanceOf(Buffer);
     })
   })
 })

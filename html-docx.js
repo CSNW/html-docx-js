@@ -1,6 +1,7 @@
 let JSZip = require('jszip');
 let fs = require('fs');
 var _ = require('underscore');
+let assert = require('assert');
 
 let html_docx = {asBlob, getMHTdocument, _prepareImageParts, generateDocument, addFiles, renderDocumentFile};
 
@@ -34,20 +35,12 @@ function addFiles(zip, html, documentOptions) {
   }
 
 async function generateDocument(zip) {
+  assert(global.Buffer, 'Buffer not available, is html-docx not being run in Node.js?');
+
   var buffer = await zip.generateAsync({
     type: 'arraybuffer'
-  });
-  
-  if (global.Blob) {
-    return new Blob([buffer], {
-      type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
-    });
-  }
-  else if (global.Buffer) {
-    return new Buffer(new Uint8Array(buffer));
-  } else {
-    throw new Error("Neither Blob nor Buffer are accessible in this environment. " + "Consider adding Blob.js shim");
-  }
+  });  
+  return Buffer.from(new Uint8Array(buffer));
 }
 
 function renderDocumentFile(opts) {
