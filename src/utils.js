@@ -1,8 +1,32 @@
 var mhtDocumentTemplate, mhtPartTemplate;
+var _ = require('underscore');
 
-mhtDocumentTemplate = require('./templates/mht_document');
+mhtDocumentTemplate = _.template(`MIME-Version: 1.0
+Content-Type: multipart/related;
+    type="text/html";
+    boundary="----=mhtDocumentPart"
 
-mhtPartTemplate = require('./templates/mht_part');
+
+------=mhtDocumentPart
+Content-Type: text/html;
+    charset="utf-8"
+Content-Transfer-Encoding: quoted-printable
+Content-Location: file:///C:/fake/document.html
+
+<%= htmlSource %>
+
+<%= contentParts %>
+
+------=mhtDocumentPart--
+`);
+
+mhtPartTemplate = _.template(`------=mhtDocumentPart
+Content-Type: <%= contentType %>
+Content-Transfer-Encoding: <%= contentEncoding %>
+Content-Location: <%= contentLocation %>
+
+<%= encodedContent %>
+`);
 
 module.exports = {
   getMHTdocument: function(htmlSource) {
