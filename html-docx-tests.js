@@ -29,7 +29,7 @@ describe('Adding files', () => {
   })
 
   it('should add file for embedded content types', () => {
-    expect(data['[Content_Types].xml']).to.be.defined
+    expect(data['[Content_Types].xml']).to.not.be.undefined
     content = String(data['[Content_Types].xml'])
     expect(content).to.match(/PartName="\/word\/afchunk.mht"/)
     expect(content).to.match(/PartName="\/word\/document.xml"/)
@@ -37,24 +37,24 @@ describe('Adding files', () => {
   })
 
   it('should add manifest for Word document', () => {
-    expect(data._rels['.rels']).to.be.defined
+    expect(data._rels['.rels']).to.not.be.undefined
     content = String(data._rels['.rels'])
     expect(content).to.match(/Target="\/word\/document.xml"/)
   })
 
   it('should add MHT file with given content', () => {
-    expect(data.word['afchunk.mht']).to.be.defined
+    expect(data.word['afchunk.mht']).to.not.be.undefined
     expect(data.word['afchunk.mht']).to.match(/foobar/)
   })
 
   it('should render the Word document and add its contents', () => {
     assert(html_docx.renderDocumentFile.calledWith({someOption: true})) 
-    expect(data.word['document.xml']).to.be.defined
+    expect(data.word['document.xml']).to.not.be.undefined
     expect(data.word['document.xml']).to.match(/<document \/>/)
   })
 
   it('should add relationship file to link between Word and HTML files', () => {
-    expect(data.word._rels['document.xml.rels']).to.be.defined
+    expect(data.word._rels['document.xml.rels']).to.not.be.undefined
     expect(data.word._rels['document.xml.rels']).to
       .match(/Target="\/word\/afchunk.mht" Id="htmlChunk"/)
   })
