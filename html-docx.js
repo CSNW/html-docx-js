@@ -1,7 +1,6 @@
 let JSZip = require('jszip');
 let fs = require('fs');
 var _ = require('underscore');
-_.merge = require('lodash.merge');
 
 let html_docx = {asBlob, getMHTdocument, _prepareImageParts, generateDocument, addFiles, renderDocumentFile};
 
@@ -10,6 +9,29 @@ function asBlob(html, options) {
   addFiles(zip, html, options);
   return generateDocument(zip);
 }
+
+function addFiles(zip, html, documentOptions) {
+  zip.file('[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+      <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml" />
+      <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+      <Override PartName="/word/afchunk.mht" ContentType="message/rfc822"/>
+    </Types>`);
+    
+  zip.folder('_rels').file('.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+    <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+      <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="/word/document.xml" Id="R09c83fafc067488e" />
+    </Relationships>`);
+    
+  return zip.folder('word')
+    .file('document.xml', html_docx.renderDocumentFile(documentOptions))
+    .file('afchunk.mht', getMHTdocument(html))
+    .folder('_rels')
+    .file('document.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+      <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+        <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/aFChunk" Target="/word/afchunk.mht" Id="htmlChunk" />
+      </Relationships>`);
+  }
 
 function generateDocument(zip) {
   var buffer = zip.generate({
@@ -28,70 +50,34 @@ function generateDocument(zip) {
   }
 }
 
-function addFiles(zip, htmlSource, documentOptions) {
-    zip.file('[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-    <Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
-      <Default Extension="rels" ContentType=
-        "application/vnd.openxmlformats-package.relationships+xml" />
-      <Override PartName="/word/document.xml" ContentType=
-        "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
-      <Override PartName="/word/afchunk.mht" ContentType="message/rfc822"/>
-    </Types>
-    `);
-    
-    zip.folder('_rels').file('.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-    <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-      <Relationship
-          Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"
-          Target="/word/document.xml" Id="R09c83fafc067488e" />
-    </Relationships>
-    `);
-    
-    return zip.folder('word')
-      .file('document.xml', html_docx.renderDocumentFile(documentOptions))
-      .file('afchunk.mht', getMHTdocument(htmlSource))
-      .folder('_rels')
-      .file('document.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-    <Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
-      <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/aFChunk"
-        Target="/word/afchunk.mht" Id="htmlChunk" />
-    </Relationships>
-    `);
-  }
+function renderDocumentFile(opts) {
+    if (!opts)
+      opts = {};
 
-function renderDocumentFile(documentOptions) {
-    var templateData;
-    if (documentOptions == null) {
-      documentOptions = {};
+    if (opts.orientation == 'landscape') {
+      data = {
+        height: 12240,
+        width: 15840,
+        orient: 'landscape'
+      };
+    } else {
+      data = {
+        width: 12240,
+        height: 15840,
+        orient: 'portrait'
+      };
     }
-    templateData = _.merge({
-    margins: {
-        top: 1440,
-        right: 1440,
-        bottom: 1440,
-        left: 1440,
-        header: 720,
-        footer: 720,
-        gutter: 0
-    }
-    }, (function() {
-    switch (documentOptions.orientation) {
-        case 'landscape':
-        return {
-            height: 12240,
-            width: 15840,
-            orient: 'landscape'
-        };
-        default:
-        return {
-            width: 12240,
-            height: 15840,
-            orient: 'portrait'
-        };
-    }
-    })(), {
-    margins: documentOptions.margins
-    });
+
+    data.margins = Object.assign({
+      top: 1440,
+      right: 1440,
+      bottom: 1440,
+      left: 1440,
+      header: 720,
+      footer: 720,
+      gutter: 0
+    }, opts.margins || {});
+        
     return _.template(`<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:document
     xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"
@@ -133,16 +119,17 @@ function renderDocumentFile(documentOptions) {
     </w:sectPr>
     </w:body>
 </w:document>
-`)(templateData);
+`)(data);
 }
 
-function getMHTdocument(htmlSource) {
-    // take care of images
-    var imageContentParts, ref;
-    ref = _prepareImageParts(htmlSource), htmlSource = ref.htmlSource, imageContentParts = ref.imageContentParts;
-    // for proper MHT parsing all '=' signs in html need to be replaced with '=3D'
-    htmlSource = htmlSource.replace(/\=/g, '=3D');
-    return _.template(`MIME-Version: 1.0
+function getMHTdocument(original_html) {
+  // take care of images
+  let {html, imageContentParts} = _prepareImageParts(original_html);
+  
+  // for proper MHT parsing all '=' signs in html need to be replaced with '=3D'
+  html = html.replace(/\=/g, '=3D');
+
+  return _.template(`MIME-Version: 1.0
 Content-Type: multipart/related;
     type="text/html";
     boundary="----=mhtDocumentPart"
@@ -154,48 +141,42 @@ Content-Type: text/html;
 Content-Transfer-Encoding: quoted-printable
 Content-Location: file:///C:/fake/document.html
 
-<%= htmlSource %>
+<%= html %>
 
 <%= contentParts %>
 
 ------=mhtDocumentPart--
-`)({htmlSource: htmlSource, contentParts: imageContentParts.join('\n')});
+`)({html: html, contentParts: imageContentParts.join('\n')});
 }
 
-function _prepareImageParts(htmlSource) {
-    var imageContentParts, inlinedReplacer, inlinedSrcPattern;
-    imageContentParts = [];
-    inlinedSrcPattern = /"data:(\w+\/\w+);(\w+),(\S+)"/g;
-    // replacer function for images sources via DATA URI
-    inlinedReplacer = function(match, contentType, contentEncoding, encodedContent) {
-        var contentLocation, extension, index;
-        index = imageContentParts.length;
-        extension = contentType.split('/')[1];
-        contentLocation = "file:///C:/fake/image" + index + "." + extension;
-        imageContentParts.push( _.template(`------=mhtDocumentPart
+let mhtDocumentPartTemplate = _.template(`------=mhtDocumentPart
 Content-Type: <%= contentType %>
 Content-Transfer-Encoding: <%= contentEncoding %>
-Content-Location: <%= contentLocation %>
+Content-Location: <%= file_url %>
 
 <%= encodedContent %>
-`)({contentType, contentEncoding, contentLocation, encodedContent}));
-        return "\"" + contentLocation + "\"";
-    };
-    if (typeof htmlSource === 'string') {
-        if (!/<img/g.test(htmlSource)) {
-        return {
-            htmlSource: htmlSource,
-            imageContentParts: imageContentParts
-        };
-        }
-        htmlSource = htmlSource.replace(inlinedSrcPattern, inlinedReplacer);
-        return {
-          htmlSource: htmlSource,
-          imageContentParts: imageContentParts
-        };
-    } else {
-        throw new Error("Not a valid source provided!");
-    }
+`);
+
+function _prepareImageParts(html) {
+  if (typeof html != 'string')
+    throw new Error('invalid html source passed to html-docx-js _prepareImageParts()');
+  if (!/<img/g.test(html))
+    return {html: html, imageContentParts: []};
+
+  let imageContentParts = [];
+  
+  // replace image data: sources
+  html = html.replace(/"data:(\w+\/\w+);(\w+),(\S+)"/g, function(match, contentType, contentEncoding, encodedContent) {
+    let file_ext = contentType.split('/')[1];
+    let file_url = `file:///C:/fake/image${imageContentParts.length}.${file_ext}`;
+    imageContentParts.push(mhtDocumentPartTemplate({contentType, contentEncoding, file_url, encodedContent}));
+    return `"${file_url}"`;
+  });
+
+  return {
+    html: html,
+    imageContentParts: imageContentParts
+  };
 }
 
 module.exports = html_docx;

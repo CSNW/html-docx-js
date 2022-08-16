@@ -1,7 +1,7 @@
 chai = require('chai')
 expect = chai.expect
 sinon = require('sinon')
-chai.use(require('sinon-chai'))
+let assert = require('assert')
 let html_docx = require('./html-docx.js');
 
 describe('Adding files', () => {
@@ -48,7 +48,7 @@ describe('Adding files', () => {
   })
 
   it('should render the Word document and add its contents', () => {
-    expect(html_docx.renderDocumentFile).to.have.been.calledWith({someOption: true}) 
+    assert(html_docx.renderDocumentFile.calledWith({someOption: true})) 
     expect(data.word['document.xml']).to.be.defined
     expect(data.word['document.xml']).to.match(/<document \/>/)
   })
@@ -69,7 +69,7 @@ describe('Coverting HTML to MHT', () => {
 
   it('should fail if HTML source is not a string', () => {
     htmlSource = {}
-    expect(html_docx._prepareImageParts.bind(null, htmlSource)).to.throw(/Not a valid source provided!/)
+    expect(html_docx._prepareImageParts.bind(null, htmlSource)).to.throw(/invalid html source/)
   })
 
   it('should detect any embedded image and change its source to ContentPart name', () => {
@@ -134,7 +134,7 @@ describe('Rendering the Word document', () => {
 
     it('should retrieve ZIP file as arraybuffer', () => {
       html_docx.generateDocument(zip)
-      expect(zip.generate).to.have.been.calledWith({type: 'arraybuffer'})
+      assert(zip.generate.calledWith({type: 'arraybuffer'}))
     })
 
     it('should return Blob with correct content type if it is available', () => {
