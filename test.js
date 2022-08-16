@@ -2,8 +2,7 @@ chai = require('chai')
 expect = chai.expect
 sinon = require('sinon')
 chai.use(require('sinon-chai'))
-internal = require('./src/internal.js')
-utils = require('./src/utils.js')
+let html_docx = require('./html-docx.js');
 
 describe('Adding files', () => {
   var data
@@ -21,12 +20,12 @@ describe('Adding files', () => {
       }
     })
     data = {}
-    sinon.stub(internal, 'renderDocumentFile').returns('<document />')
-    internal.addFiles(zip(data), 'foobar', {someOption: true})
+    sinon.stub(html_docx, 'renderDocumentFile').returns('<document />')
+    html_docx.addFiles(zip(data), 'foobar', {someOption: true})
   });
 
   afterEach (() => {
-    internal.renderDocumentFile.restore()
+    html_docx.renderDocumentFile.restore()
   })
 
   it('should add file for embedded content types', () => {
@@ -49,7 +48,7 @@ describe('Adding files', () => {
   })
 
   it('should render the Word document and add its contents', () => {
-    expect(internal.renderDocumentFile).to.have.been.calledWith({someOption: true}) 
+    expect(html_docx.renderDocumentFile).to.have.been.calledWith({someOption: true}) 
     expect(data.word['document.xml']).to.be.defined
     expect(data.word['document.xml']).to.match(/<document \/>/)
   })
@@ -64,25 +63,25 @@ describe('Adding files', () => {
 describe('Coverting HTML to MHT', () => {
   it('should convert HTML source to an MHT document', () => {
     htmlSource = '<!DOCTYPE HTML><head></head><body></body>'
-    expect(utils.getMHTdocument(htmlSource)).to
+    expect(html_docx.getMHTdocument(htmlSource)).to
       .match(/^MIME-Version: 1.0\r?\nContent-Type: multipart\/related;/)
   })
 
   it('should fail if HTML source is not a string', () => {
     htmlSource = {}
-    expect(utils._prepareImageParts.bind(null, htmlSource)).to.throw(/Not a valid source provided!/)
+    expect(html_docx._prepareImageParts.bind(null, htmlSource)).to.throw(/Not a valid source provided!/)
   })
 
   it('should detect any embedded image and change its source to ContentPart name', () => {
     htmlSource = '<p><img src="data:image/jpeg;base64,PHN2ZyB..."></p>'
-    expect(utils.getMHTdocument(htmlSource)).to.match(/<img src=3D"file:\/(\/\/C:)?\/fake\/image0\.jpeg">/)
+    expect(html_docx.getMHTdocument(htmlSource)).to.match(/<img src=3D"file:\/(\/\/C:)?\/fake\/image0\.jpeg">/)
   })
 
   it('should produce ContentPart for each embedded image', () => {
     htmlSource = '<p><img src="data:image/jpeg;base64,PHN2ZyB...">' +
     '<img src="data:image/png;base64,PHN2ZyB...">' +
     '<img src="data:image/gif;base64,PHN2ZyB..."></p>'
-    imageParts = utils._prepareImageParts(htmlSource).imageContentParts
+    imageParts = html_docx._prepareImageParts(htmlSource).imageContentParts
     expect(imageParts).to.have.length(3)
     imageParts.forEach ((image, index) => {
       expect(image).to.match(/Content-Type: image\/(jpeg|png|gif)/)
@@ -94,37 +93,37 @@ describe('Coverting HTML to MHT', () => {
   it('should replace = signs to 3D=', () => {
     htmlSource = '<body style="width: 100%">This = 0</body>'
     var regex = /<body style=3D"width: 100%">This =3D 0<\/body>/
-    expect(utils.getMHTdocument(htmlSource)).to.match(regex)
+    expect(html_docx.getMHTdocument(htmlSource)).to.match(regex)
   })
 })
 
 describe('Rendering the Word document', () => {
   it('should return a Word Processing ML file that embeds the altchunk', () => {
-    expect(internal.renderDocumentFile()).to.match(/altChunk r:id="htmlChunk"/)
+    expect(html_docx.renderDocumentFile()).to.match(/altChunk r:id="htmlChunk"/)
   })
 
   it('should set portrait orientation and letter size if no formatting options are passed', () => {
-    expect(internal.renderDocumentFile()).to
+    expect(html_docx.renderDocumentFile()).to
       .match(/<w:pgSz w:w="12240" w:h="15840" w:orient="portrait" \/>/)
   })
 
   it('should set landscape orientation and letter size if orientation is set to landscape', () => {
-    expect(internal.renderDocumentFile({orientation: 'landscape'})).to
+    expect(html_docx.renderDocumentFile({orientation: 'landscape'})).to
       .match(/<w:pgSz w:w="15840" w:h="12240" w:orient="landscape" \/>/)
   })
 
   it('should set default margins if no options were passed', () => {
-    expect(internal.renderDocumentFile()).to.match(/<w:pgMar w:top="1440"/)
-    expect(internal.renderDocumentFile({orientation: 'landscape'})).to.match(/<w:pgMar w:top="1440"/)
+    expect(html_docx.renderDocumentFile()).to.match(/<w:pgMar w:top="1440"/)
+    expect(html_docx.renderDocumentFile({orientation: 'landscape'})).to.match(/<w:pgMar w:top="1440"/)
   })
 
   it('should set the margin if it was specified as an option', () => {
-    expect(internal.renderDocumentFile({margins: {top: 123}})).to.match(/<w:pgMa[^>]*w:top="123"/)
+    expect(html_docx.renderDocumentFile({margins: {top: 123}})).to.match(/<w:pgMa[^>]*w:top="123"/)
   })
 
   it('should leave default values for margins that are not defined in the options', () => {
-    expect(internal.renderDocumentFile({margins: {left: 123}})).to.match(/<w:pgMar[^>]*w:left="123"/)
-    expect(internal.renderDocumentFile({margins: {left: 123}})).to.match(/<w:pgMar[^>]*w:top="1440"/)
+    expect(html_docx.renderDocumentFile({margins: {left: 123}})).to.match(/<w:pgMar[^>]*w:left="123"/)
+    expect(html_docx.renderDocumentFile({margins: {left: 123}})).to.match(/<w:pgMar[^>]*w:top="1440"/)
   })
 
   describe('Generating the document', () => {
@@ -134,20 +133,20 @@ describe('Rendering the Word document', () => {
     })
 
     it('should retrieve ZIP file as arraybuffer', () => {
-      internal.generateDocument(zip)
+      html_docx.generateDocument(zip)
       expect(zip.generate).to.have.been.calledWith({type: 'arraybuffer'})
     })
 
     it('should return Blob with correct content type if it is available', () => {
       if (!global.Blob) return 
-      document = internal.generateDocument(zip)
+      document = html_docx.generateDocument(zip)
       expect(document.type).to.be
         .equal('application/vnd.openxmlformats-officedocument.wordprocessingml.document')
     })
 
     it('should return Buffer in Node.js environment', () => {
       if (global.Buffer) return
-      expect(internal.generateDocumentzip).to.be.an.instanceOf(Buffer)
+      expect(html_docx.generateDocumentzip).to.be.an.instanceOf(Buffer)
     })
   })
 })
