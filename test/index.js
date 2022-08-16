@@ -65,7 +65,7 @@ describe('Coverting HTML to MHT', () => {
   it('should convert HTML source to an MHT document', () => {
     htmlSource = '<!DOCTYPE HTML><head></head><body></body>'
     expect(utils.getMHTdocument(htmlSource)).to
-      .match(/^MIME-Version: 1.0\nContent-Type: multipart\/related;/)
+      .match(/^MIME-Version: 1.0\r?\nContent-Type: multipart\/related;/)
   })
 
   it('should fail if HTML source is not a string', () => {
