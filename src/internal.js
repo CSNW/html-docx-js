@@ -104,8 +104,29 @@ module.exports = {
     return documentTemplate(templateData);
   },
   addFiles: function(zip, htmlSource, documentOptions) {
-    zip.file('[Content_Types].xml', fs.readFileSync(__dirname + '/assets/content_types.xml'));
-    zip.folder('_rels').file('.rels', fs.readFileSync(__dirname + '/assets/rels.xml'));
-    return zip.folder('word').file('document.xml', this.renderDocumentFile(documentOptions)).file('afchunk.mht', utils.getMHTdocument(htmlSource)).folder('_rels').file('document.xml.rels', fs.readFileSync(__dirname + '/assets/document.xml.rels'));
+    zip.file('[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+  <Default Extension="rels" ContentType=
+    "application/vnd.openxmlformats-package.relationships+xml" />
+  <Override PartName="/word/document.xml" ContentType=
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+  <Override PartName="/word/afchunk.mht" ContentType="message/rfc822"/>
+</Types>
+`);
+
+    zip.folder('_rels').file('.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship
+      Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument"
+      Target="/word/document.xml" Id="R09c83fafc067488e" />
+</Relationships>
+`);
+
+    return zip.folder('word').file('document.xml', this.renderDocumentFile(documentOptions)).file('afchunk.mht', utils.getMHTdocument(htmlSource)).folder('_rels').file('document.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+  <Relationship Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/aFChunk"
+    Target="/word/afchunk.mht" Id="htmlChunk" />
+</Relationships>
+`);
   }
 };
